@@ -22,6 +22,8 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 
 class TimeChangeRequestResource extends Resource
 {
@@ -45,10 +47,14 @@ class TimeChangeRequestResource extends Resource
                 
                 Section::make('Time and Date')
                     ->schema([
-                        DatePicker::make('date')->required(),
+                        DatePicker::make('date')
+                            ->prefixIcon('heroicon-o-calendar')
+                            ->required(),
                         Grid::make(2)->schema([
-                            TimePicker::make('check_in'),
-                            TimePicker::make('check_out'),
+                            TimePicker::make('check_in')
+                                ->prefixIcon('heroicon-o-clock'),
+                            TimePicker::make('check_out')
+                                ->prefixIcon('heroicon-o-clock'),
                         ])
                     ]),
                 
@@ -70,16 +76,32 @@ class TimeChangeRequestResource extends Resource
                 TextColumn::make('date')->date()->sortable(),
                 TextColumn::make('check_in')->time(),
                 TextColumn::make('check_out')->time(),
-                TextColumn::make('reason')->limit(50),
+                TextColumn::make('reason')->limit(50)->searchable(),
                 BadgeColumn::make('status')
                     ->colors([
                         'warning' => 'pending',
                         'success' => 'approved',
                         'danger' => 'rejected',
-                    ])->sortable(),
+                    ])->sortable()->searchable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ]),
+                Filter::make('date')
+                    ->form([
+                        DatePicker::make('date'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['date'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('date', '=', $date),
+                            );
+                    })
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
