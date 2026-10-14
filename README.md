@@ -1,61 +1,160 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# HRMS — Human Resource Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+An **HR management system** built on **Laravel 12 + Filament 3.3**, covering the employee record,
+attendance, shift scheduling, biometric device management and attendance-correction approvals —
+with a multilingual admin panel.
 
-## About Laravel
+> **Note on this repository:** it is a work in progress. The `.gitignore` is currently empty, so
+> `vendor/`, `project.tar.gz` and `.env` are committed. See **Repository hygiene** below.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Modules
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 👤 Employee records
+| Resource | Purpose |
+|----------|---------|
+| `EmployeeResource` / `EmployeesResource` | Employee master record — personal details, department, designation, title, work location, shift |
+| `DepartmentResource` | Departments, with an inline **Employees relation manager** |
+| `DesignationResource` | Job designations |
+| `EmployeeTitleResource` | Employee titles / grades |
+| `WorkLocationResource` | Duty stations and work locations |
 
-## Learning Laravel
+### ⏰ Attendance & shifts
+| Resource | Purpose |
+|----------|---------|
+| `AttendanceResource` | Daily attendance records — check-in, check-out, worked hours |
+| `EmployeeShiftResource` | Shift definitions and per-employee shift assignment |
+| `TimeChangeRequestResource` | **Attendance correction workflow** — an employee raises a request to amend a punch, which is approved or rejected |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🖨️ Biometric devices
+| Resource | Purpose |
+|----------|---------|
+| `MachineResource` | Biometric/time-attendance machines — device registry with registration and connection details |
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 💰 Payroll components
+| Model | Purpose |
+|-------|---------|
+| `Allowance` | Recurring and one-off allowances |
+| `Deduction` | Deductions applied against employees |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🔐 Administration
+| Resource | Purpose |
+|----------|---------|
+| `UserResource` | Panel users and access, with a custom `UserOverview` widget |
+| `Lead` | Lead capture records |
 
-## Laravel Sponsors
+### 🌍 Localisation
+The panel uses the **Filament Spatie Laravel Translatable plugin**, so translatable fields can be
+maintained in multiple languages from the admin UI.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## Tech stack
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+| Layer | Technology |
+|-------|-----------|
+| Framework | Laravel 12 (PHP 8.2+) |
+| Admin panel | Filament 3.2 |
+| Translations | filament/spatie-laravel-translatable-plugin 3.3 |
+| Database | SQLite (default) / MySQL |
+| Frontend | Blade + Vite |
+| Testing | PHPUnit 11 |
+| Tooling | Laravel Pint, Laravel Pail, Laravel Sail |
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Getting started
 
-## Code of Conduct
+```bash
+composer install
+npm install
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+cp .env.example .env
+php artisan key:generate
 
-## Security Vulnerabilities
+php artisan migrate
+php artisan filament:make-user     # or use the bundled helper commands
+php artisan serve
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+The panel is served at `/admin`.
+
+### Helper commands
+
+Two Artisan commands ship with the project for account administration:
+
+```bash
+php artisan ...:create-filament-user    # app/Console/Commands/CreateFilamentUser.php
+php artisan ...:reset-user-password     # app/Console/Commands/ResetUserPassword.php
+```
+
+### Development
+
+```bash
+composer dev
+```
+
+Runs the server, queue listener, Pail log tail and Vite concurrently.
+
+### Tests
+
+```bash
+composer test
+```
+
+---
+
+## Project structure
+
+```
+app/
+├── Console/Commands/       # CreateFilamentUser, ResetUserPassword
+├── Filament/Resources/     # Attendance, Employee(s), Shift, Machine,
+│                           # TimeChangeRequest, Department, Designation,
+│                           # EmployeeTitle, WorkLocation, User
+└── Models/                 # Attendance, Employee/Employees, Allowance,
+                            # Deduction, EmployeeShift, TimeChangeRequest,
+                            # Department, Designation, EmployeeTitle,
+                            # WorkLocation, Lead, User
+database/migrations/        # 25 migrations
+routes/
+├── console.php
+└── web.php
+```
+
+---
+
+## Repository hygiene
+
+This repo needs a cleanup pass before it is production-ready:
+
+- `.gitignore` is **empty** — it should exclude `.env`, `/vendor`, `/node_modules`,
+  `project.tar.gz`, `.idx` and `.vscode`.
+- `vendor/` is committed (thousands of files) and `project.tar.gz` adds ~59 MB.
+  Run `composer install` instead of shipping `vendor/`.
+- `.env` is tracked. **Remove it and rotate `APP_KEY`.**
+- `MachineResource.php` and `EmployeeResource.php` are referenced by their `Pages/` classes but the
+  resource classes themselves are not in the tree — the project appears mid-refactor.
+- `Employee` / `Employees` models and `EmployeeResource` / `EmployeesResource` resources are
+  duplicated; one pair should be retired.
+
+---
+
+## Roadmap
+
+- [ ] Add `.gitignore` and untrack `vendor/`, `.env`, `project.tar.gz`
+- [ ] Consolidate the duplicate Employee / Employees models and resources
+- [ ] Restore the missing `MachineResource` and `EmployeeResource` classes
+- [ ] Leave management and holiday calendar
+- [ ] Overtime rules and roster generation
+- [ ] Payroll processing on top of allowances and deductions
+- [ ] Employee self-service portal
+- [ ] Biometric punch sync job from `MachineResource` devices
+- [ ] Reporting and exports
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Proprietary — not licensed for redistribution.
